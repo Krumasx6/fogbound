@@ -1,5 +1,7 @@
 using System;
+using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {       
@@ -7,10 +9,19 @@ public class PlayerMovement : MonoBehaviour
     public CharacterController controller;
 
     [Header("Movement Settings")]
-    public float currentSpeed;
     public float walkSpeed = 8f;
+    public float runSpeed = 14f;
     public float gravity = -78.48f;
     public float jumpHeight = 8f;
+
+    [Header("Stamina Settings")]
+    public float maxStamina = 100f;
+    public float currentStamina = 100f;
+    public float staminaDrainRate = 20f;
+    public float staminaRegenRate = 15f;
+    public float staminaRegenDelay = 2.5f;
+
+    private float regenTimer;
 
     [Header("Ground Checking")]
     public Transform groundCheck;
@@ -20,7 +31,8 @@ public class PlayerMovement : MonoBehaviour
 
     public Vector3 velocity;
 
-
+    public bool IsSprinting { get; private set; }
+ 
     void Update()
     {
         
@@ -34,18 +46,43 @@ public class PlayerMovement : MonoBehaviour
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
-        Vector3 move = transform.right * x + transform.forward * z;
+        Vector3 moveInput = new Vector3(x, 0f, z);
+        bool hasMovementInput = moveInput.magnitude > 0.1f;
 
-        controller.Move(move * walkSpeed * Time.deltaTime);
+        bool sprintInput = Input.GetKey(KeyCode.LeftShift);
+        bool canSprint = currentStamina > 0f;
+        IsSprinting = sprintInput && hasMovementInput && canSprint;
 
+        float speed = IsSprinting ? runSpeed : walkSpeed;
+
+        Vector3 move = (transform.right * x + transform.forward * z).normalized;
+        controller.Move(move * speed * Time.deltaTime);
+
+        // Jump
         if (Input.GetButtonDown("Jump") && isGrounded)
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+
+        // Stamina
+        if (IsSprinting)
         {
-            velocity.y =  Mathf.Sqrt(jumpHeight * -2f * gravity);
+            currentStamina -= staminaDrainRate * Time.deltaTime;
+            regenTimer = 0f;
+        }
+        else
+        {
+            regenTimer += Time.deltaTime;
+
+            if (regenTimer >= staminaRegenDelay)
+                currentStamina += staminaRegenRate * Time.deltaTime;
         }
 
-        velocity.y += gravity * Time.deltaTime;
+        // Clamp stamina
+        currentStamina = Mathf.Clamp(currentStamina, 0f, maxStamina);
 
+        // Gravity
+        velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
 
     }
+
 }
