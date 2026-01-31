@@ -58,11 +58,9 @@ public class PlayerMovement : MonoBehaviour
         Vector3 move = (transform.right * x + transform.forward * z).normalized;
         controller.Move(move * speed * Time.deltaTime);
 
-        // Jump
         if (Input.GetButtonDown("Jump") && isGrounded)
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
 
-        // Stamina
         if (IsSprinting)
         {
             currentStamina -= staminaDrainRate * Time.deltaTime;
@@ -76,10 +74,8 @@ public class PlayerMovement : MonoBehaviour
                 currentStamina += staminaRegenRate * Time.deltaTime;
         }
 
-        // Clamp stamina
         currentStamina = Mathf.Clamp(currentStamina, 0f, maxStamina);
 
-        // Gravity
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
 

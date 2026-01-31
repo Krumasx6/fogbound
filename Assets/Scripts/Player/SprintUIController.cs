@@ -10,6 +10,7 @@ public class SprintUIController : MonoBehaviour
 
     private float leftValue = 0f;
     private float rightValue = 0f;
+    
     void Start()
     {
         if (playerMovement == null)
@@ -18,7 +19,6 @@ public class SprintUIController : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
     void Update()
     {
         HandleSprintValues();
@@ -27,9 +27,11 @@ public class SprintUIController : MonoBehaviour
 
     private void HandleSprintValues()
     {
+        // Calculate how much stamina has been used (as a percentage)
         float staminaUsed = playerMovement.maxStamina - playerMovement.currentStamina;
         float staminaUsedPercent = staminaUsed / playerMovement.maxStamina;
         
+        // Map stamina used to bar values (0 stamina used = 0 bar shrink, max stamina used = max bar shrink)
         leftValue = staminaUsedPercent * maxValue;
         rightValue = staminaUsedPercent * maxValue;
     }
