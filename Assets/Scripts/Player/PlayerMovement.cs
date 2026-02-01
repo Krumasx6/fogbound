@@ -9,10 +9,10 @@ public class PlayerMovement : MonoBehaviour
     public CharacterController controller;
 
     [Header("Movement Settings")]
-    public float walkSpeed = 8f;
+    public float walkSpeed = 6f;
     public float runSpeed = 14f;
-    public float gravity = -78.48f;
-    public float jumpHeight = 8f;
+    public float gravity = -60f;
+    public float jumpHeight = 3f;
 
     [Header("Stamina Settings")]
     public float maxStamina = 100f;
@@ -55,8 +55,12 @@ public class PlayerMovement : MonoBehaviour
 
         float speed = IsSprinting ? runSpeed : walkSpeed;
 
-        Vector3 move = (transform.right * x + transform.forward * z).normalized;
-        controller.Move(move * speed * Time.deltaTime);
+        Vector3 move = (transform.right * x + transform.forward * z);
+
+        if (hasMovementInput)
+        {
+            controller.Move(move * speed * Time.deltaTime);
+        }
 
         if (Input.GetButtonDown("Jump") && isGrounded)
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
@@ -77,8 +81,9 @@ public class PlayerMovement : MonoBehaviour
         currentStamina = Mathf.Clamp(currentStamina, 0f, maxStamina);
 
         velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
+         controller.Move(new Vector3(0, velocity.y, 0) * Time.deltaTime);
 
     }
 
 }
+
